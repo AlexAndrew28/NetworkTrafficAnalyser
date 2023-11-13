@@ -1,4 +1,4 @@
-from analysis_functions import check_IPv4, get_IPv4_split, get_IPv6_split, get_IP_columns, split_history
+from data_helper_functions import check_IPv4, get_IPv4_split, get_IPv6_split, get_IP_columns, split_history
 
 def test_check_IPv4():
     assert check_IPv4("10.10.10.10") == True
