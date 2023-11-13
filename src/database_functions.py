@@ -34,8 +34,10 @@ DATA_ENCODING_DICTIONARY = {
         "OTH": 12
     },
     "label": {
+        "Benign": 0,
         "benign": 0,
-        "Malicious": 1
+        "Malicious": 1,
+        "malicious": 1
     },
     "detailed-label": {
         "Benign": 0,
@@ -223,10 +225,10 @@ def clean_dataset(df:pd.DataFrame) -> pd.DataFrame:
     df["id.orig_h_v6b"] = df["id.orig_h_unpacked"].apply(lambda x: x[5])
     df["id.orig_h_v6c"] = df["id.orig_h_unpacked"].apply(lambda x: x[6])
     df["id.orig_h_v6d"] = df["id.orig_h_unpacked"].apply(lambda x: x[7])
-    df["id.orig_h_v6a"] = df["id.orig_h_unpacked"].apply(lambda x: x[8])
-    df["id.orig_h_v6b"] = df["id.orig_h_unpacked"].apply(lambda x: x[9])
-    df["id.orig_h_v6c"] = df["id.orig_h_unpacked"].apply(lambda x: x[10])
-    df["id.orig_h_v6d"] = df["id.orig_h_unpacked"].apply(lambda x: x[11])
+    df["id.orig_h_v6e"] = df["id.orig_h_unpacked"].apply(lambda x: x[8])
+    df["id.orig_h_v6f"] = df["id.orig_h_unpacked"].apply(lambda x: x[9])
+    df["id.orig_h_v6g"] = df["id.orig_h_unpacked"].apply(lambda x: x[10])
+    df["id.orig_h_v6h"] = df["id.orig_h_unpacked"].apply(lambda x: x[11])
 
     df = df.drop("id.orig_h", axis=1)
     df = df.drop("id.orig_h_unpacked", axis=1)
@@ -242,10 +244,10 @@ def clean_dataset(df:pd.DataFrame) -> pd.DataFrame:
     df["id.resp_h_v6b"] = df["id.resp_h_unpacked"].apply(lambda x: x[5])
     df["id.resp_h_v6c"] = df["id.resp_h_unpacked"].apply(lambda x: x[6])
     df["id.resp_h_v6d"] = df["id.resp_h_unpacked"].apply(lambda x: x[7])
-    df["id.resp_h_v6a"] = df["id.resp_h_unpacked"].apply(lambda x: x[8])
-    df["id.resp_h_v6b"] = df["id.resp_h_unpacked"].apply(lambda x: x[9])
-    df["id.resp_h_v6c"] = df["id.resp_h_unpacked"].apply(lambda x: x[10])
-    df["id.resp_h_v6d"] = df["id.resp_h_unpacked"].apply(lambda x: x[11])
+    df["id.resp_h_v6e"] = df["id.resp_h_unpacked"].apply(lambda x: x[8])
+    df["id.resp_h_v6f"] = df["id.resp_h_unpacked"].apply(lambda x: x[9])
+    df["id.resp_h_v6g"] = df["id.resp_h_unpacked"].apply(lambda x: x[10])
+    df["id.resp_h_v6h"] = df["id.resp_h_unpacked"].apply(lambda x: x[11])
 
     df = df.drop("id.resp_h", axis=1)
     df = df.drop("id.resp_h_unpacked", axis=1)
@@ -253,5 +255,48 @@ def clean_dataset(df:pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-    
+def select_data_for_training(
+        df: pd.DataFrame, 
+        headings:List[str] = [
+            "ts",
+            "id.orig_p",
+            "id.resp_p",
+            "proto",
+            "service",
+            "duration",
+            "orig_bytes",
+            "conn_state",
+            "local_orig",
+            "missed_bytes",
+            "orig_pkts",
+            "orig_ip_bytes",
+            "resp_pkts",
+            "resp_ip_bytes",
+            "id.orig_h_v4a",
+            "id.orig_h_v4b",
+            "id.orig_h_v4c",
+            "id.orig_h_v4d",
+            "id.orig_h_v6a",
+            "id.orig_h_v6b",
+            "id.orig_h_v6c",
+            "id.orig_h_v6d",
+            "id.orig_h_v6e",
+            "id.orig_h_v6f",
+            "id.orig_h_v6g",
+            "id.orig_h_v6h",
+            "id.resp_h_v4a",
+            "id.resp_h_v4b",
+            "id.resp_h_v4c",
+            "id.resp_h_v4d",
+            "id.resp_h_v6a",
+            "id.resp_h_v6b",
+            "id.resp_h_v6c",
+            "id.resp_h_v6d",
+            "id.resp_h_v6e",
+            "id.resp_h_v6f",
+            "id.resp_h_v6g",
+            "id.resp_h_v6h",
+        ]
+                             ):
+    return df[headings], df["label"], df["detailed-label"]
 
