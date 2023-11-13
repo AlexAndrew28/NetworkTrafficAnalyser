@@ -1,13 +1,15 @@
-from typing import List, Union
+from typing import List
 import pandas as pd
+
+from analysis_functions import check_IPv4, get_IPv4_split, get_IPv6_split, get_IP_columns, split_history
 
 
 locations = [
     "src/opt/Malware-Project/BigDataset/IoTScenarios/CTU-Honeypot-Capture-4-1/bro/conn.log.labeled",
-#    "src/opt/Malware-Project/BigDataset/IoTScenarios/CTU-Honeypot-Capture-5-1/bro/conn.log.labeled",
-#    "src/opt/Malware-Project/BigDataset/IoTScenarios/CTU-Honeypot-Capture-7-1/Somfy-01/bro/conn.log.labeled",
-#    "src/opt/Malware-Project/BigDataset/IoTScenarios/CTU-IoT-Malware-Capture-1-1/bro/conn.log.labeled",
-#    "src/opt/Malware-Project/BigDataset/IoTScenarios/CTU-IoT-Malware-Capture-3-1/bro/conn.log.labeled"
+    "src/opt/Malware-Project/BigDataset/IoTScenarios/CTU-Honeypot-Capture-5-1/bro/conn.log.labeled",
+    "src/opt/Malware-Project/BigDataset/IoTScenarios/CTU-Honeypot-Capture-7-1/Somfy-01/bro/conn.log.labeled",
+    "src/opt/Malware-Project/BigDataset/IoTScenarios/CTU-IoT-Malware-Capture-1-1/bro/conn.log.labeled",
+    "src/opt/Malware-Project/BigDataset/IoTScenarios/CTU-IoT-Malware-Capture-3-1/bro/conn.log.labeled"
 ]
 
 
@@ -141,65 +143,22 @@ DATA_TYPE_CONVERSION = {
     "resp_ip_bytes": int
 }
 
-def split_history(text: str) -> List[int]:
-    """Split a string containing at most one of the following letters: ShADadFf into a one hot encoding of the letters
-
-    Args:
-        text (str): The text to parse
-
-    Returns:
-        List[int]: A list containing 1s or 0s based on the presence of each of the letters in: ShADadFf
-    """
-    if type(text) != str:
-        return [0, 0, 0, 0, 0, 0, 0, 0]
-    out = {
-        "S": 0,
-        "h": 0,
-        "A": 0,
-        "D": 0,
-        "a": 0,
-        "d": 0,
-        "F": 0,
-        "f": 0
-        }
-    
-    for letter in text:
-        out[letter] = 1
-    
-    return list(out.values())
-
-
-def split_ip(ip_address: str) -> List[int]:
-    """splits an ip address up into its 4 integer sections
-
-    Args:
-        ip_address (str): An ip address the the following format: int.int.int.int as a string
-
-    Returns:
-        List[int]: A list containing the different integer parts of the ip address
-    """
-    split_ip = ip_address.split(".")
-    
-    split_ip = list(map(int, split_ip))
-    
-    return split_ip
-    
-
-
 remove_end = lambda x: x.strip("\n")
 
+data_rows = []
 
-# open the file 
-with open(locations[0]) as f:
-    lines = f.readlines()
+for location in locations:
+    # open the file 
+    with open(location) as f:
+        lines = f.readlines()
 
-    # read the column headings and data types
-    column_headings = lines[6].split()[1:]
-    
-    column_types = lines[7].split()[1:]
-    
-    # extract the data
-    data_rows = [list(map(remove_end,line.split())) for line in lines[8:]]
+        # read the column headings and data types
+        column_headings = lines[6].split()[1:]
+        
+        column_types = lines[7].split()[1:]
+        
+        # extract the data
+        data_rows.extend([list(map(remove_end,line.split())) for line in lines[8:]])
         
 
 # create a pandas dataframe
@@ -241,22 +200,40 @@ df = df.drop("history_unpacked", axis=1)
 # split the two ip address column into a column for each section of the address -> so that its understandable to a machine learning alg
 
 # create a temp column with the values of each of the future columns split in a list
-df["id.orig_h_unpacked"] = df["id.orig_h"].map(lambda x: split_ip(x))
+df["id.orig_h_unpacked"] = df["id.orig_h"].map(lambda x: get_IP_columns(x))
 
-df["id.orig_h_a"] = df["id.orig_h_unpacked"].apply(lambda x: x[0])
-df["id.orig_h_b"] = df["id.orig_h_unpacked"].apply(lambda x: x[1])
-df["id.orig_h_c"] = df["id.orig_h_unpacked"].apply(lambda x: x[2])
-df["id.orig_h_d"] = df["id.orig_h_unpacked"].apply(lambda x: x[3])
+df["id.orig_h_v4a"] = df["id.orig_h_unpacked"].apply(lambda x: x[0])
+df["id.orig_h_v4b"] = df["id.orig_h_unpacked"].apply(lambda x: x[1])
+df["id.orig_h_v4c"] = df["id.orig_h_unpacked"].apply(lambda x: x[2])
+df["id.orig_h_v4d"] = df["id.orig_h_unpacked"].apply(lambda x: x[3])
+
+df["id.orig_h_v6a"] = df["id.orig_h_unpacked"].apply(lambda x: x[4])
+df["id.orig_h_v6b"] = df["id.orig_h_unpacked"].apply(lambda x: x[5])
+df["id.orig_h_v6c"] = df["id.orig_h_unpacked"].apply(lambda x: x[6])
+df["id.orig_h_v6d"] = df["id.orig_h_unpacked"].apply(lambda x: x[7])
+df["id.orig_h_v6a"] = df["id.orig_h_unpacked"].apply(lambda x: x[8])
+df["id.orig_h_v6b"] = df["id.orig_h_unpacked"].apply(lambda x: x[9])
+df["id.orig_h_v6c"] = df["id.orig_h_unpacked"].apply(lambda x: x[10])
+df["id.orig_h_v6d"] = df["id.orig_h_unpacked"].apply(lambda x: x[11])
 
 df = df.drop("id.orig_h", axis=1)
 df = df.drop("id.orig_h_unpacked", axis=1)
 
-df["id.resp_h_unpacked"] = df["id.resp_h"].map(lambda x: split_ip(x))
+df["id.resp_h_unpacked"] = df["id.resp_h"].map(lambda x: get_IP_columns(x))
 
-df["id.resp_h_a"] = df["id.resp_h_unpacked"].apply(lambda x: x[0])
-df["id.resp_h_b"] = df["id.resp_h_unpacked"].apply(lambda x: x[1])
-df["id.resp_h_c"] = df["id.resp_h_unpacked"].apply(lambda x: x[2])
-df["id.resp_h_d"] = df["id.resp_h_unpacked"].apply(lambda x: x[3])
+df["id.resp_h_v4a"] = df["id.resp_h_unpacked"].apply(lambda x: x[0])
+df["id.resp_h_v4b"] = df["id.resp_h_unpacked"].apply(lambda x: x[1])
+df["id.resp_h_v4c"] = df["id.resp_h_unpacked"].apply(lambda x: x[2])
+df["id.resp_h_v4d"] = df["id.resp_h_unpacked"].apply(lambda x: x[3])
+
+df["id.resp_h_v6a"] = df["id.resp_h_unpacked"].apply(lambda x: x[4])
+df["id.resp_h_v6b"] = df["id.resp_h_unpacked"].apply(lambda x: x[5])
+df["id.resp_h_v6c"] = df["id.resp_h_unpacked"].apply(lambda x: x[6])
+df["id.resp_h_v6d"] = df["id.resp_h_unpacked"].apply(lambda x: x[7])
+df["id.resp_h_v6a"] = df["id.resp_h_unpacked"].apply(lambda x: x[8])
+df["id.resp_h_v6b"] = df["id.resp_h_unpacked"].apply(lambda x: x[9])
+df["id.resp_h_v6c"] = df["id.resp_h_unpacked"].apply(lambda x: x[10])
+df["id.resp_h_v6d"] = df["id.resp_h_unpacked"].apply(lambda x: x[11])
 
 df = df.drop("id.resp_h", axis=1)
 df = df.drop("id.resp_h_unpacked", axis=1)
