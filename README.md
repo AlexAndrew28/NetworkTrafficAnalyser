@@ -1,1 +1,1 @@
-A netowkr traffic analyser to analyse the IoT-23 dataset full of malicious and benign IoT network traffic.
+A network traffic analyser for the IoT-23 dataset. The IoT-23 dataset is full of malicious and benign IoT network traffic.
