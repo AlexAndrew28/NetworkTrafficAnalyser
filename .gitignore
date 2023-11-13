@@ -1,0 +1,4 @@
+venv/
+src/net_analyser.egg-info/
+__pycache__/
+src/opt/
