@@ -5,6 +5,8 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import ConfusionMatrixDisplay, classification_report
 from sklearn.preprocessing import StandardScaler  
 
+
+from nn_model import NeuralNetwork
 from database_functions import load_dataset, clean_dataset, select_data_for_training
 
 
@@ -13,7 +15,9 @@ locations = [
     "src/opt/Malware-Project/BigDataset/IoTScenarios/CTU-Honeypot-Capture-5-1/bro/conn.log.labeled",
     "src/opt/Malware-Project/BigDataset/IoTScenarios/CTU-Honeypot-Capture-7-1/Somfy-01/bro/conn.log.labeled",
     "src/opt/Malware-Project/BigDataset/IoTScenarios/CTU-IoT-Malware-Capture-1-1/bro/conn.log.labeled",
-    "src/opt/Malware-Project/BigDataset/IoTScenarios/CTU-IoT-Malware-Capture-3-1/bro/conn.log.labeled"
+    "src/opt/Malware-Project/BigDataset/IoTScenarios/CTU-IoT-Malware-Capture-3-1/bro/conn.log.labeled",
+#    "src/opt/Malware-Project/BigDataset/IoTScenarios/CTU-IoT-Malware-Capture-7-1/bro/conn.log.labeled",
+#    "src/opt/Malware-Project/BigDataset/IoTScenarios/CTU-IoT-Malware-Capture-8-1/bro/conn.log.labeled"
 ]
 
 print("Loading Dataset")
@@ -34,26 +38,49 @@ print("Testing dataset size: ", test.size)
 train_x, train_y, train_y_detailed = select_data_for_training(train)
 test_x, test_y, test_y_detailed = select_data_for_training(test)
 
-scaler = StandardScaler() 
 
-scaler.fit(train_x) 
-train_x = scaler.transform(train_x)  
-test_x = scaler.transform(test_x)  
+#scaler = StandardScaler() 
+#scaler.fit(train_x) 
+#train_x = scaler.transform(train_x)  
+#test_x = scaler.transform(test_x)  
 
-print("Initialising model")
+sklearn = False
 
-model = svm.SVC()
 
-print("Training")
+if sklearn:
+    print("Initialising model")
 
-model.fit(train_x, train_y)
+    model = svm.SVC()
 
-pred = model.predict(test_x)
+    print("Training")
 
-print(classification_report(test_y, pred, target_names=["Benign", "Malicious"]))
+    model.fit(train_x, train_y)
 
-disp = ConfusionMatrixDisplay.from_predictions(test_y, pred)
+    pred = model.predict(test_x)
 
-disp.plot()
+    print(classification_report(test_y, pred, target_names=["Benign", "Malicious"]))
 
+    disp = ConfusionMatrixDisplay.from_predictions(test_y, pred)
+
+    disp.plot()
+
+    
+else:
+    print("Initialising model")
+    
+    input_size = train_x.shape[1]
+    output_size = 2
+
+    model = NeuralNetwork(input_size, output_size)
+
+    print("Training")
+
+    model.train(train_x, train_y, test_x, test_y, n_epochs=10)
+    
+    acc, pred, true = model.test(test_x, test_y)
+    
+    disp = ConfusionMatrixDisplay.from_predictions(test_y, pred, display_labels=["Benign", "Malicious"])
+
+    disp.plot()
+    
 plt.show()
