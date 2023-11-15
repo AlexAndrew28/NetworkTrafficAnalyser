@@ -186,4 +186,11 @@ class NeuralNetwork:
             test_accuracy, _, _ = self.test(test_x, test_y)
             print("Test Accuracy: ", test_accuracy)
                 
+    def save(self, name: str):
+        """ Save the weights of the model for future use
+
+        Args:
+            name (str): The name to save the model under
+        """
+        torch.save(self.model.state_dict(), name)
                 

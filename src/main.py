@@ -75,12 +75,14 @@ else:
 
     print("Training")
 
-    model.train(train_x, train_y, test_x, test_y, n_epochs=10)
+    model.train(train_x, train_y, test_x, test_y, n_epochs=2)
     
     acc, pred, true = model.test(test_x, test_y)
     
     disp = ConfusionMatrixDisplay.from_predictions(test_y, pred, display_labels=["Benign", "Malicious"])
 
     disp.plot()
+    
+    model.save("saved_models/model")
     
 plt.show()
